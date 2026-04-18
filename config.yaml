@@ -1,0 +1,93 @@
+project:
+  name: patchtst-trading-multi-model
+  seed: 42
+  mlflow_experiment: PatchTST-Trading-MultiModel
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  model_dir: models
+  artifact_dir: artifacts
+  mlflow_dir: mlruns           # ← répertoire local MLflow
+
+market:
+  symbols: [BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT]
+  interval: 1h
+  limit_per_call: 1000
+  lookback_days: 180
+  output_csv: data/raw/market_data.csv
+
+sentiment:
+  output_dir: data/raw/sentiment_datasets
+  merged_output_csv: data/raw/sentiment_labeled.csv
+  aligned_output_csv: data/processed/sentiment_market_aligned.csv
+  use_downloaded_labels_as_proxy_feature: true
+
+features:
+  returns: [1, 3, 6, 12]
+  sma: [5, 10, 20]
+  ema: [5, 10, 20]
+  rsi_period: 14
+  vol_window: 12
+  zscore_window: 20
+  add_calendar: true
+  add_sentiment: true
+
+target:
+  horizon: 12
+  buy_threshold: 0.008
+  sell_threshold: -0.008
+  classes: [sell, hold, buy]
+
+model:
+  seq_len: 96
+  patch_len: 12
+  stride: 6
+  d_model: 64
+  n_heads: 4
+  n_layers: 3
+  ff_dim: 128
+  dropout: 0.20
+  n_classes: 3
+  hidden_dim: 128
+  ensemble_members: [patchtst, lstm_attention, cnn_transformer]
+  ensemble_trainable: true
+  ensemble_freeze_submodels: false
+
+training:
+  batch_size: 64
+  epochs: 20
+  lr: 0.0003
+  weight_decay: 0.0001
+  patience: 6
+  label_smoothing: 0.02
+  grad_clip: 1.0
+  use_class_weights: true
+
+optuna:
+  n_trials: 20
+  n_startup: 5
+  n_epochs_trial: 8
+
+backtest:
+  fee_bps: 5
+  slippage_bps: 2
+  probability_threshold: 0.45
+  allow_short: true
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  cors_origins: ['*']
+
+rl:
+  enabled: true
+  state_window: 48
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_end: 0.05
+  epsilon_decay: 0.995
+  target_update_every: 100
+  replay_capacity: 10000
+  batch_size: 64
+  episodes: 100

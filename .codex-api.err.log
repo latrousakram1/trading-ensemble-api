@@ -1,0 +1,19 @@
+INFO:     Started server process [33436]
+INFO:     Waiting for application startup.
+21:44:40  INFO      Données chargées : 17,280 lignes | actifs : ['BNBUSDT', 'BTCUSDT', 'ETHUSDT', 'SOLUSDT']
+C:\Users\Utilisateur\Downloads\final_patchtst_trading_deployable_final\final_patchtst_trading_deployable_final\src\model.py:23: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=n_layers)
+21:44:41  INFO      Modèle chargé : patchtst  (116,163 params)  [patchtst_final.pt]
+21:44:41  INFO      Modèle chargé : lstm_attention  (1,354,883 params)  [lstm_attention_final.pt]
+C:\Users\Utilisateur\Downloads\final_patchtst_trading_deployable_final\final_patchtst_trading_deployable_final\src\advanced_models.py:245: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.transformer = nn.TransformerEncoder(enc_layer, num_layers=n_layers)
+21:44:41  INFO      Modèle chargé : cnn_transformer  (195,331 params)  [cnn_transformer_final.pt]
+21:44:41  INFO      Poids ensemble : {'patchtst': 0.3088, 'lstm_attention': 0.3486, 'cnn_transformer': 0.3426}
+21:44:41  INFO      API prête — 3 modèle(s) chargé(s)
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+C:\Users\Utilisateur\Downloads\final_patchtst_trading_deployable_final\final_patchtst_trading_deployable_final\src\model.py:23: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=n_layers)
+C:\Users\Utilisateur\Downloads\final_patchtst_trading_deployable_final\final_patchtst_trading_deployable_final\src\advanced_models.py:245: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.transformer = nn.TransformerEncoder(enc_layer, num_layers=n_layers)
+21:55:00  INFO      Modèle chargé : ensemble  (1,666,380 params)  [ensemble_final.pt]

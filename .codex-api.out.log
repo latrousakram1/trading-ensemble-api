@@ -1,0 +1,71 @@
+INFO:     127.0.0.1:55687 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57952 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63393 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64311 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64311 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64311 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59713 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59713 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64311 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64311 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59713 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61953 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61953 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62412 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62412 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62412 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62867 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62867 - "OPTIONS /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62412 - "POST /predict HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61671 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61671 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54130 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54130 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62183 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52686 - "GET /models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64370 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64370 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52092 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52092 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49659 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49659 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58785 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58785 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54678 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54678 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58785 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58785 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63900 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58785 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63900 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58785 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51251 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51251 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60373 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60373 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60373 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57349 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63447 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63447 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63447 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50659 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56916 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56916 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56916 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63525 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63525 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56916 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58310 - "OPTIONS /predict/cnn_transformer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58310 - "POST /predict/cnn_transformer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63974 - "OPTIONS /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56815 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0.9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63974 - "POST /predict/ensemble HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63643 - "GET /predict/ensemble/scan?threshold=0.45&allow_short=true&sentiment_score=0.9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60855 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60855 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60855 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60855 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60855 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60855 - "GET /health HTTP/1.1" 200 OK

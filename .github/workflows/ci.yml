@@ -1,0 +1,123 @@
+name: CI — Tests & Qualité
+
+on:
+  push:
+    branches: [ main, develop, "feature/**" ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ── Job 1 : Tests unitaires & intégration ──────────────────────────────
+  test:
+    name: Tests Python
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Installation des dépendances de test
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov httpx
+          pip install fastapi uvicorn pydantic
+          pip install numpy pandas pyyaml scikit-learn
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Vérification du style (flake8)
+        run: |
+          pip install flake8
+          flake8 src/ --max-line-length=120 --ignore=E501,W503 --exclude=__pycache__
+        continue-on-error: true
+
+      - name: Tests unitaires
+        run: |
+          python -m pytest tests/ -v \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            -x \
+            --tb=short
+        env:
+          PYTHONPATH: .
+
+      - name: Upload couverture de code
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false
+
+  # ── Job 2 : Lint & Sécurité ────────────────────────────────────────────
+  security:
+    name: Analyse sécurité
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Analyse de sécurité (bandit)
+        run: |
+          pip install bandit
+          bandit -r src/ -ll -ii --exclude tests/ || true
+
+      - name: Vérification des dépendances (safety)
+        run: |
+          pip install safety
+          safety check -r requirements-deploy.txt --full-report || true
+
+  # ── Job 3 : Validation API ─────────────────────────────────────────────
+  validate-api:
+    name: Validation structure API
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Installation
+        run: |
+          pip install fastapi pydantic pyyaml numpy
+
+      - name: Validation imports API
+        run: |
+          python -c "
+          import ast, sys
+          with open('src/api.py') as f:
+              tree = ast.parse(f.read())
+          print('✓ src/api.py syntaxe valide')
+          "
+
+      - name: Vérification config.yaml
+        run: |
+          python -c "
+          import yaml
+          with open('config.yaml') as f:
+              cfg = yaml.safe_load(f)
+          required = ['model', 'training', 'backtest', 'paths', 'target']
+          missing = [k for k in required if k not in cfg]
+          if missing:
+              print(f'Clés manquantes dans config.yaml: {missing}')
+              sys.exit(1)
+          print('✓ config.yaml valide — toutes les clés requises présentes')
+          "

@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# MLflow
+mlflow.db
+mlruns/
+
+# Modèles (trop lourds pour Git)
+models/*.pt
+models/*.pth
+
+# Données sensibles
+data/raw/*.csv
+artifacts/*.json
+
+# Logs
+*.log
+.codex-api.err.log
+.codex-api.out.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+models/*.pt
+models/*.pth
+models/*.ckpt
+
+# Données brutes et traitées
+data/raw/
+data/processed/
+*.csv
+!data/.gitkeep
+
+# Artefacts MLflow
+mlruns/
+artifacts/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Tests
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
