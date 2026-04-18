@@ -26,9 +26,9 @@ trading-deployment/
 │   ├── backtest.py               # Moteur de backtesting
 │   └── utils.py                  # Utilitaires
 ├── models/
-│   ├── patchtst_final.pt         # ⚠️  RÉQUIS - Modèle PatchTST
-│   ├── lstm_attention_final.pt   # ⚠️  RÉQUIS - Modèle LSTM
-│   ├── cnn_transformer_final.pt  # ⚠️  RÉQUIS - Modèle CNN
+│   ├── patchtst_final.pt         #   RÉQUIS - Modèle PatchTST
+│   ├── lstm_attention_final.pt   #   RÉQUIS - Modèle LSTM
+│   ├── cnn_transformer_final.pt  #   RÉQUIS - Modèle CNN
 │   └── ensemble_final.pt         # OPTIONNEL - Configuration ensemble
 ├── data/
 │   └── processed/
@@ -128,7 +128,7 @@ python test_api.py
 curl http://localhost:8000/models
 ```
 
-## 🔍 Dépannage
+##  Dépannage
 
 ### Problèmes Courants
 
@@ -211,7 +211,7 @@ curl -X POST "http://localhost:8000/predict/ensemble" \
   }'
 ```
 
-## 🔧 Développement Local (Sans Docker)
+##  Développement Local (Sans Docker)
 
 Pour le développement ou debugging :
 
@@ -457,4 +457,4 @@ model:
 
 ---
 
-*Rapport généré — Système PatchTST Trading Multi-Modèles — Avril 2026*
+
