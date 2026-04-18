@@ -1,15 +1,15 @@
-# 🚀 Guide de Déploiement - Trading AI Ensemble
+#  Guide de Déploiement - Trading AI Ensemble
 
 Guide complet pour déployer le système de trading IA multi-modèles en production.
 
-## 📋 Prérequis
+##  Prérequis
 
 - **Docker** & **Docker Compose** (version 20.10+)
 - **4GB RAM** minimum disponible
 - **2GB espace disque** pour les modèles
 - Accès internet pour télécharger les images Docker
 
-## 🏗️ Structure Requise
+##  Structure Requise
 
 Assurez-vous que votre répertoire de déploiement contient :
 
@@ -47,7 +47,7 @@ trading-deployment/
 └── README_DEPLOY.md             # Ce fichier
 ```
 
-## ⚠️ Points Critiques
+##  Points Critiques
 
 ### Modèles Obligatoires
 
@@ -63,7 +63,7 @@ trading-deployment/
 - `data/processed/sentiment_market_aligned.csv` : Données fusionnées marché + sentiment
 - Fichier de configuration `config.yaml` valide
 
-## 🚀 Déploiement en 5 Étapes
+##  Déploiement en 5 Étapes
 
 ### Étape 1 : Préparation
 
@@ -183,7 +183,7 @@ docker stats
 docker compose exec api bash
 ```
 
-## 🧪 Tests de Validation
+##  Tests de Validation
 
 ### Test Automatisé
 
@@ -230,7 +230,7 @@ uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload
 uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload --log-level debug
 ```
 
-## 📊 Métriques et Monitoring
+##  Métriques et Monitoring
 
 ### Endpoints de Monitoring
 
@@ -245,7 +245,7 @@ Les logs sont structurés avec niveaux :
 - `WARNING` : Anomalies non-critiques
 - `ERROR` : Erreurs nécessitant attention
 
-## 🔄 Mise à Jour
+##  Mise à Jour
 
 ### Mise à jour des Modèles
 
@@ -271,7 +271,7 @@ docker compose down
 docker compose up -d --build
 ```
 
-## 🛡️ Sécurité
+##  Sécurité
 
 ### Recommandations
 
@@ -289,7 +289,7 @@ API_KEY=votre_cle_secrete
 DATABASE_URL=postgresql://...
 ```
 
-## 📞 Support
+##  Support
 
 ### Diagnostics
 
@@ -312,13 +312,13 @@ docker system df
 
 ### Contacts
 
-- 🐛 **Bugs** : Issues GitHub
-- 💬 **Questions** : Discussions GitHub
-- 📧 **Support** : [votre-email@domain.com]
+-  **Bugs** : Issues GitHub
+-  **Questions** : Discussions GitHub
+-  **Support** : [latrousakram@gmail.com]
 
 ---
 
-## ✅ Checklist Déploiement
+##  Checklist Déploiement
 
 - [ ] Modèles `.pt` présents dans `models/`
 - [ ] Données dans `data/processed/`
@@ -328,7 +328,7 @@ docker system df
 - [ ] Tests `python test_api.py` passent
 - [ ] API accessible sur `http://localhost:8000`
 
-**Déploiement réussi ! 🎉**
+**Déploiement réussi ! **
 
 Documentation interactive : **http://localhost:8000/docs**
 
