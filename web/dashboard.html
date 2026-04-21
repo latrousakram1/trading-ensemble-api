@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trading Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: rgba(255, 252, 247, 0.88);
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #0f766e;
+      --buy: #16a34a;
+      --sell: #dc2626;
+      --hold: #6b7280;
+      --border: rgba(31, 41, 55, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 26%),
+        linear-gradient(180deg, #faf6ef 0%, #f2ebdf 100%);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    .hero {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .controls, .grid, .metrics {
+      display: grid;
+      gap: 16px;
+    }
+    .controls {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+      backdrop-filter: blur(8px);
+    }
+    .card.pad { padding: 18px; }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    input, select, button {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      background: white;
+    }
+    button {
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, #0f766e, #155e75);
+      border: none;
+      font-weight: 700;
+      margin-top: 26px;
+    }
+    .metrics {
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      margin-bottom: 20px;
+    }
+    .metric-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .grid {
+      grid-template-columns: 2fr 1fr;
+      align-items: start;
+    }
+    .chart-card { padding: 18px; }
+    .chart-card h2, .side h2 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .chart-box { height: 340px; }
+    .chart-box.small { height: 250px; }
+    .side {
+      display: grid;
+      gap: 16px;
+    }
+    .signal {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .signal strong {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .signal-buy { color: var(--buy); }
+    .signal-sell { color: var(--sell); }
+    .signal-hold { color: var(--hold); }
+    .list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 0;
+      border-top: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+    .muted { color: var(--muted); }
+    .footnote {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .chart-box { height: 280px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Dashboard live<br>des signaux de trading</h1>
+      <p>Le graphique de prix est alimente par le buffer glissant 96h et le signal ensemble est recalculé a partir du flux Binance. La courbe d'equity affiche le backtest disponible pour la demonstration.</p>
+    </section>
+
+    <section class="controls">
+      <div class="card pad">
+        <label for="asset">Actif</label>
+        <select id="asset">
+          <option>BTCUSDT</option>
+          <option>ETHUSDT</option>
+          <option>BNBUSDT</option>
+          <option>SOLUSDT</option>
+        </select>
+      </div>
+      <div class="card pad">
+        <label for="threshold">Seuil BUY/SELL</label>
+        <input id="threshold" type="number" value="0.45" min="0" max="1" step="0.01">
+      </div>
+      <div class="card pad">
+        <label for="allowShort">Vente a decouvert</label>
+        <select id="allowShort">
+          <option value="true">Autorisee</option>
+          <option value="false">Desactivee</option>
+        </select>
+      </div>
+      <div class="card pad">
+        <button id="refreshBtn">Rafraichir</button>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <div class="card pad">
+        <div class="muted">Source marche</div>
+        <div id="marketSource" class="metric-value">--</div>
+      </div>
+      <div class="card pad">
+        <div class="muted">Signal live</div>
+        <div id="signalValue" class="metric-value">--</div>
+      </div>
+      <div class="card pad">
+        <div class="muted">Confiance</div>
+        <div id="confidenceValue" class="metric-value">--</div>
+      </div>
+      <div class="card pad">
+        <div class="muted">Sharpe fiable</div>
+        <div id="sharpeValue" class="metric-value">--</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card chart-card">
+        <h2>Prix et signaux</h2>
+        <div class="chart-box"><canvas id="priceChart"></canvas></div>
+      </div>
+      <div class="side">
+        <div class="card pad">
+          <h2>Derniere prediction</h2>
+          <div class="signal">
+            <span class="muted">Ensemble</span>
+            <strong id="signalBadge">--</strong>
+          </div>
+          <ul class="list">
+            <li><span>Prob BUY</span><span id="buyProb">--</span></li>
+            <li><span>Prob HOLD</span><span id="holdProb">--</span></li>
+            <li><span>Prob SELL</span><span id="sellProb">--</span></li>
+            <li><span>Prix</span><span id="lastClose">--</span></li>
+            <li><span>Timestamp</span><span id="signalTs">--</span></li>
+          </ul>
+        </div>
+        <div class="card pad">
+          <h2>Scan multi-actifs</h2>
+          <ul id="scanList" class="list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card chart-card" style="margin-top:16px;">
+      <h2>Equity Curve du backtest</h2>
+      <div class="chart-box small"><canvas id="equityChart"></canvas></div>
+      <p id="metricsNote" class="footnote"></p>
+    </section>
+  </div>
+
+  <script>
+    let priceChart;
+    let equityChart;
+
+    function signalClass(signal) {
+      if (signal === "BUY") return "signal-buy";
+      if (signal === "SELL") return "signal-sell";
+      return "signal-hold";
+    }
+
+    function destroyChart(chart) {
+      if (chart) chart.destroy();
+    }
+
+    function formatPct(v) {
+      return `${(v * 100).toFixed(1)}%`;
+    }
+
+    function markerPoint(signal, candle, close) {
+      return {
+        x: candle.timestamp,
+        y: close,
+        signal,
+      };
+    }
+
+    function buildPriceChart(candles, liveSignal) {
+      destroyChart(priceChart);
+      const ctx = document.getElementById("priceChart");
+      const labels = candles.map(c => c.timestamp);
+      const closes = candles.map(c => c.close);
+      const last = candles[candles.length - 1];
+      const markers = last ? [markerPoint(liveSignal.signal, last, last.close)] : [];
+
+      priceChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Prix",
+              data: closes,
+              borderColor: "#155e75",
+              backgroundColor: "rgba(21,94,117,0.12)",
+              fill: true,
+              borderWidth: 2,
+              tension: 0.28,
+              pointRadius: 0
+            },
+            {
+              label: "Signal live",
+              type: "scatter",
+              data: markers,
+              parsing: false,
+              pointRadius: 7,
+              pointHoverRadius: 8,
+              pointBackgroundColor: markers.map(m =>
+                m.signal === "BUY" ? "#16a34a" : m.signal === "SELL" ? "#dc2626" : "#6b7280"
+              ),
+              pointBorderColor: "#fff",
+              pointBorderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top" }
+          },
+          scales: {
+            x: { ticks: { maxTicksLimit: 8 } }
+          }
+        }
+      });
+    }
+
+    function buildEquityChart(points) {
+      destroyChart(equityChart);
+      const ctx = document.getElementById("equityChart");
+      equityChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: points.map(p => p.timestamp),
+          datasets: [{
+            label: "Equity",
+            data: points.map(p => p.equity),
+            borderColor: "#0f766e",
+            backgroundColor: "rgba(15,118,110,0.12)",
+            fill: true,
+            pointRadius: 0,
+            tension: 0.22,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { ticks: { maxTicksLimit: 8 } }
+          }
+        }
+      });
+    }
+
+    async function loadDashboard() {
+      const asset = document.getElementById("asset").value;
+      const threshold = document.getElementById("threshold").value;
+      const allowShort = document.getElementById("allowShort").value;
+      const response = await fetch(`/dashboard/data?asset=${encodeURIComponent(asset)}&threshold=${threshold}&allow_short=${allowShort}`);
+      const data = await response.json();
+
+      const signal = data.latest_signal;
+      document.getElementById("marketSource").textContent = data.market_source;
+      document.getElementById("signalValue").textContent = signal.signal;
+      document.getElementById("confidenceValue").textContent = formatPct(signal.confidence);
+      document.getElementById("sharpeValue").textContent = data.reliable_metrics.sharpe ?? "--";
+
+      const badge = document.getElementById("signalBadge");
+      badge.textContent = signal.signal;
+      badge.className = signalClass(signal.signal);
+
+      document.getElementById("buyProb").textContent = formatPct(signal.prob_buy);
+      document.getElementById("holdProb").textContent = formatPct(signal.prob_hold);
+      document.getElementById("sellProb").textContent = formatPct(signal.prob_sell);
+      document.getElementById("lastClose").textContent = signal.close.toFixed(2);
+      document.getElementById("signalTs").textContent = signal.timestamp.replace("T", " ").slice(0, 16);
+      document.getElementById("metricsNote").textContent = data.reliable_metrics.note;
+
+      const scanList = document.getElementById("scanList");
+      scanList.innerHTML = "";
+      data.scan.results.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span>${item.asset}</span><span class="${signalClass(item.signal)}">${item.signal} (${formatPct(item.confidence)})</span>`;
+        scanList.appendChild(li);
+      });
+
+      buildPriceChart(data.candles, signal);
+      buildEquityChart(data.equity_curve);
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", loadDashboard);
+    loadDashboard();
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+version: "3.9"
+
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  Trading IA — Docker Compose                                              ║
+# ║  Démarrage : docker compose up -d                                        ║
+# ║  Arrêt     : docker compose down                                         ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+services:
+
+  # ── API + Dashboard ─────────────────────────────────────────────────────────
+  trading-api:
+    build:
+      context: ..          # racine du projet
+      dockerfile: docker/Dockerfile
+    container_name: trading_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"        # Dashboard  → http://localhost:8000
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+      - ../artifacts:/app/artifacts
+      - ../logs:/app/logs
+    environment:
+      - PORT=8000
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PYTHONPATH=/app
+    depends_on:
+      - mlflow
+    networks:
+      - trading_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── MLFlow Tracking Server ───────────────────────────────────────────────────
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: trading_mlflow
+    restart: unless-stopped
+    ports:
+      - "5000:5000"        # MLFlow UI → http://localhost:5000
+    volumes:
+      - mlflow_data:/mlflow
+      - ../artifacts:/artifacts
+    command: >
+      mlflow server
+        --backend-store-uri sqlite:////mlflow/mlflow.db
+        --default-artifact-root /artifacts
+        --host 0.0.0.0
+        --port 5000
+    networks:
+      - trading_net
+
+  # ── Jupyter Lab (optionnel — développement) ──────────────────────────────────
+  jupyter:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: trading_jupyter
+    restart: unless-stopped
+    ports:
+      - "8888:8888"        # Jupyter → http://localhost:8888
+    volumes:
+      - ../:/app
+    environment:
+      - PYTHONPATH=/app
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    command: >
+      jupyter lab
+        --ip=0.0.0.0
+        --port=8888
+        --no-browser
+        --allow-root
+        --NotebookApp.token=''
+        --NotebookApp.password=''
+    depends_on:
+      - mlflow
+    networks:
+      - trading_net
+    profiles:
+      - dev                # démarrer avec : docker compose --profile dev up
+
+volumes:
+  mlflow_data:
+
+networks:
+  trading_net:
+    driver: bridge

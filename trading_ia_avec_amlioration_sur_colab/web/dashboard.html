@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading IA — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --border: #334155;
+    --text: #f1f5f9; --muted: #94a3b8;
+    --green: #22c55e; --red: #ef4444; --blue: #3b82f6;
+    --yellow: #f59e0b; --purple: #7c3aed; --teal: #0d9488;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--border);
+           padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 1.3rem; font-weight: 700; }
+  header .badge { background: var(--teal); color: white; border-radius: 9999px;
+                  padding: 2px 10px; font-size: 0.75rem; font-weight: 600; }
+  .live-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%;
+              animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  main { padding: 24px; display: grid; gap: 20px; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card h2 { font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .kpi { text-align: center; }
+  .kpi .value { font-size: 2rem; font-weight: 700; }
+  .kpi .label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .kpi .sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  .signal-row { display: flex; align-items: center; justify-content: space-between;
+                padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .signal-row:last-child { border-bottom: none; }
+  .signal-row .asset { font-weight: 600; font-size: 0.95rem; }
+  .signal-row .price { color: var(--muted); font-size: 0.85rem; }
+  .badge-signal { padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
+  .badge-BUY  { background: rgba(34,197,94,0.2);  color: var(--green); }
+  .badge-SELL { background: rgba(239,68,68,0.2);  color: var(--red); }
+  .badge-HOLD { background: rgba(148,163,184,0.2); color: var(--muted); }
+
+  .prob-bar { display: flex; gap: 4px; margin-top: 4px; height: 6px; border-radius: 3px; overflow: hidden; width: 120px; }
+  .prob-s { background: var(--red); }
+  .prob-h { background: var(--muted); }
+  .prob-b { background: var(--green); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th { padding: 8px 12px; text-align: left; color: var(--muted); font-weight: 500;
+       border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid rgba(51,65,85,0.5); }
+  tr:last-child td { border-bottom: none; }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+
+  .refresh-btn { background: var(--teal); color: white; border: none; border-radius: 8px;
+                 padding: 8px 16px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+  .refresh-btn:hover { background: #0f766e; }
+
+  canvas { max-height: 240px; }
+
+  .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+  .section-sub   { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="live-dot"></div>
+  <h1>🤖 Trading IA — Ensemble Multi-Modèles</h1>
+  <span class="badge">v3.0</span>
+  <span style="margin-left:auto;color:var(--muted);font-size:0.8rem" id="last-update">Chargement...</span>
+  <button class="refresh-btn" onclick="refreshAll()">↻ Actualiser</button>
+</header>
+
+<main>
+
+  <!-- KPIs globaux -->
+  <div>
+    <div class="section-title">📊 Métriques Ensemble</div>
+    <div class="section-sub">Évaluation sur le test set — 15% des données (temporel strict)</div>
+    <div class="grid-4" id="kpi-grid">
+      <div class="card kpi"><div class="value" id="kpi-f1" style="color:var(--teal)">—</div><div class="label">F1-Macro</div><div class="sub">Ensemble pondéré</div></div>
+      <div class="card kpi"><div class="value" id="kpi-auc" style="color:var(--blue)">—</div><div class="label">AUC-OVR</div><div class="sub">Multi-classe</div></div>
+      <div class="card kpi"><div class="value" id="kpi-sharpe" style="color:var(--yellow)">—</div><div class="label">Sharpe</div><div class="sub">Annualisé horaire</div></div>
+      <div class="card kpi"><div class="value" id="kpi-wr" style="color:var(--green)">—</div><div class="label">Win Rate</div><div class="sub">Backtest</div></div>
+    </div>
+  </div>
+
+  <!-- Signaux live + Comparaison modèles -->
+  <div class="grid-2">
+
+    <div class="card">
+      <h2>⚡ Signaux Temps Réel</h2>
+      <div id="signals-list">
+        <div style="color:var(--muted);font-size:0.85rem">En attente des données...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏆 Comparaison des modèles</h2>
+      <table>
+        <thead><tr><th>Modèle</th><th>F1</th><th>AUC</th><th>Sharpe</th><th>WR</th></tr></thead>
+        <tbody id="models-table"><tr><td colspan="5" style="color:var(--muted)">—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Graphiques -->
+  <div class="grid-2">
+    <div class="card">
+      <h2>📈 Equity Curve — Ensemble</h2>
+      <canvas id="equity-chart"></canvas>
+    </div>
+    <div class="card">
+      <h2>📉 Walk-Forward — F1 par fenêtre</h2>
+      <canvas id="wf-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Distribution probabilités -->
+  <div class="grid-3">
+    <div class="card">
+      <h2>📊 F1-Macro par Modèle</h2>
+      <canvas id="f1-chart"></canvas>
+    </div>
+    <div class="card">
+      <h2>⚖️ Distribution des Signaux</h2>
+      <canvas id="signals-chart"></canvas>
+    </div>
+    <div class="card">
+      <h2>📋 Métriques Backtest</h2>
+      <table id="bt-table">
+        <thead><tr><th>Métrique</th><th>Valeur</th></tr></thead>
+        <tbody id="bt-body"><tr><td colspan="2" style="color:var(--muted)">—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Journal MLRun -->
+  <div class="card">
+    <h2>🔬 Derniers Runs MLFlow / MLRun</h2>
+    <table>
+      <thead><tr><th>Run</th><th>Modèle</th><th>F1</th><th>Sharpe</th><th>Date</th><th>Statut</th></tr></thead>
+      <tbody id="runs-table"><tr><td colspan="6" style="color:var(--muted)">Chargement...</td></tr></tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  Trading IA v3.0 — PatchTST · LSTM-Attention · CNN-Transformer · Optuna Pareto · Walk-Forward
+</footer>
+
+<script>
+// ── Données simulées (en production : fetch /api/dashboard) ──────────
+const DEMO_DATA = {
+  ensemble: { f1: 0.5821, auc: 0.7934, sharpe: 1.42, maxdd: -0.1823, win_rate: 0.5534, acc: 0.6102 },
+  models: [
+    { name: 'PatchTST',        f1: 0.5612, auc: 0.7801, sharpe: 1.21, wr: 0.541 },
+    { name: 'LSTM-Attention',  f1: 0.5734, auc: 0.7893, sharpe: 1.38, wr: 0.548 },
+    { name: 'CNN-Transformer', f1: 0.5501, auc: 0.7712, sharpe: 1.14, wr: 0.533 },
+    { name: 'Ensemble ★',     f1: 0.5821, auc: 0.7934, sharpe: 1.42, wr: 0.553 },
+  ],
+  signals: [
+    { asset: 'BTCUSDT', signal: 'BUY',  conf: 0.68, ps: 0.12, ph: 0.20, pb: 0.68, price: 98340.20 },
+    { asset: 'ETHUSDT', signal: 'HOLD', conf: 0.54, ps: 0.18, ph: 0.54, pb: 0.28, price: 3421.55 },
+    { asset: 'BNBUSDT', signal: 'SELL', conf: 0.51, ps: 0.51, ph: 0.30, pb: 0.19, price: 612.30 },
+    { asset: 'SOLUSDT', signal: 'BUY',  conf: 0.62, ps: 0.15, ph: 0.23, pb: 0.62, price: 182.40 },
+  ],
+  equity: Array.from({length: 80}, (_, i) => {
+    const t = i / 79;
+    return 1 + 0.15 * (t + 0.3 * Math.sin(8 * t) - 0.05 * Math.sin(3 * t) + 0.02 * (Math.random() - 0.5));
+  }),
+  wf: [
+    { window: 1, f1: 0.541, sharpe: 1.12 },
+    { window: 2, f1: 0.568, sharpe: 1.34 },
+    { window: 3, f1: 0.552, sharpe: 1.21 },
+    { window: 4, f1: 0.579, sharpe: 1.48 },
+  ],
+  runs: [
+    { run: 'ensemble_nb04', model: 'Ensemble', f1: 0.5821, sharpe: 1.42, date: '2025-10-28', status: '✅' },
+    { run: 'patchtst_tuned', model: 'PatchTST', f1: 0.5612, sharpe: 1.21, date: '2025-10-27', status: '✅' },
+    { run: 'lstm_tuned', model: 'LSTM', f1: 0.5734, sharpe: 1.38, date: '2025-10-27', status: '✅' },
+    { run: 'optuna_pareto', model: 'Optuna', f1: 0.5734, sharpe: 1.41, date: '2025-10-26', status: '✅' },
+  ],
+};
+
+let charts = {};
+
+function renderKPIs(d) {
+  document.getElementById('kpi-f1').textContent     = (d.ensemble.f1 * 100).toFixed(1) + '%';
+  document.getElementById('kpi-auc').textContent    = d.ensemble.auc.toFixed(4);
+  document.getElementById('kpi-sharpe').textContent = d.ensemble.sharpe.toFixed(2);
+  document.getElementById('kpi-wr').textContent     = (d.ensemble.win_rate * 100).toFixed(1) + '%';
+}
+
+function renderSignals(d) {
+  const container = document.getElementById('signals-list');
+  container.innerHTML = d.signals.map(s => `
+    <div class="signal-row">
+      <div>
+        <div class="asset">${s.asset}</div>
+        <div class="price">$${s.price.toLocaleString('fr-CA', {minimumFractionDigits:2})}</div>
+        <div class="prob-bar" style="margin-top:6px">
+          <div class="prob-s" style="flex:${s.ps}"></div>
+          <div class="prob-h" style="flex:${s.ph}"></div>
+          <div class="prob-b" style="flex:${s.pb}"></div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <span class="badge-signal badge-${s.signal}">${s.signal}</span>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">${(s.conf*100).toFixed(0)}% confiance</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderModelsTable(d) {
+  const tbody = document.getElementById('models-table');
+  tbody.innerHTML = d.models.map(m => `
+    <tr>
+      <td>${m.name}</td>
+      <td>${(m.f1*100).toFixed(1)}%</td>
+      <td>${m.auc.toFixed(4)}</td>
+      <td class="${m.sharpe >= 1 ? 'positive' : 'negative'}">${m.sharpe.toFixed(2)}</td>
+      <td>${(m.wr*100).toFixed(1)}%</td>
+    </tr>
+  `).join('');
+}
+
+function renderBtTable(d) {
+  const rows = [
+    ['Sharpe annualisé', d.ensemble.sharpe.toFixed(2)],
+    ['Max Drawdown', (d.ensemble.maxdd * 100).toFixed(2) + '%'],
+    ['Win Rate', (d.ensemble.win_rate * 100).toFixed(1) + '%'],
+    ['Accuracy', (d.ensemble.acc * 100).toFixed(1) + '%'],
+  ];
+  document.getElementById('bt-body').innerHTML = rows.map(([k,v]) => `
+    <tr><td style="color:var(--muted)">${k}</td><td>${v}</td></tr>
+  `).join('');
+}
+
+function renderRunsTable(d) {
+  document.getElementById('runs-table').innerHTML = d.runs.map(r => `
+    <tr>
+      <td style="font-family:monospace;font-size:0.8rem">${r.run}</td>
+      <td>${r.model}</td>
+      <td class="positive">${(r.f1*100).toFixed(1)}%</td>
+      <td class="${r.sharpe>=1?'positive':'negative'}">${r.sharpe.toFixed(2)}</td>
+      <td style="color:var(--muted)">${r.date}</td>
+      <td>${r.status}</td>
+    </tr>
+  `).join('');
+}
+
+function createEquityChart(d) {
+  const ctx = document.getElementById('equity-chart');
+  if (charts.equity) charts.equity.destroy();
+
+  const maxVal = Math.max(...d.equity);
+  const colors = d.equity.map(v => v >= 1 ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)');
+
+  charts.equity = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: d.equity.map((_, i) => `H${i}`),
+      datasets: [{
+        label: 'Equity',
+        data: d.equity,
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34,197,94,0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: false },
+        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+      }
+    }
+  });
+}
+
+function createWFChart(d) {
+  const ctx = document.getElementById('wf-chart');
+  if (charts.wf) charts.wf.destroy();
+  charts.wf = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: d.wf.map(w => `Fenêtre ${w.window}`),
+      datasets: [{
+        label: 'F1-Macro',
+        data: d.wf.map(w => w.f1),
+        backgroundColor: '#3b82f6',
+      }, {
+        label: 'Sharpe',
+        data: d.wf.map(w => w.sharpe),
+        backgroundColor: '#0d9488',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#94a3b8' } } },
+      scales: {
+        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+      }
+    }
+  });
+}
+
+function createF1Chart(d) {
+  const ctx = document.getElementById('f1-chart');
+  if (charts.f1) charts.f1.destroy();
+  charts.f1 = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: d.models.map(m => m.name),
+      datasets: [{
+        data: d.models.map(m => m.f1),
+        backgroundColor: ['#0d9488','#7c3aed','#1e3a8a','#22c55e'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font:{size:10} }, grid: { color: '#334155' } },
+        y: { min: 0.3, max: 0.7, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+      }
+    }
+  });
+}
+
+function createSignalsChart(d) {
+  const ctx = document.getElementById('signals-chart');
+  if (charts.sig) charts.sig.destroy();
+  const counts = d.signals.reduce((a, s) => { a[s.signal] = (a[s.signal]||0)+1; return a; }, {});
+  charts.sig = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['BUY','HOLD','SELL'],
+      datasets: [{
+        data: [counts.BUY||0, counts.HOLD||0, counts.SELL||0],
+        backgroundColor: ['#22c55e','#6b7280','#ef4444'],
+        borderColor: '#1e293b', borderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#94a3b8' } } }
+    }
+  });
+}
+
+function refreshAll() {
+  // En production : fetch('/api/dashboard').then(r=>r.json()).then(render)
+  // Ici : simulation
+  document.getElementById('last-update').textContent =
+    'Mis à jour ' + new Date().toLocaleTimeString('fr-CA');
+
+  const d = DEMO_DATA;
+  renderKPIs(d);
+  renderSignals(d);
+  renderModelsTable(d);
+  renderBtTable(d);
+  renderRunsTable(d);
+  createEquityChart(d);
+  createWFChart(d);
+  createF1Chart(d);
+  createSignalsChart(d);
+}
+
+// Démarrage
+refreshAll();
+// Rafraîchissement auto toutes les 60s
+setInterval(refreshAll, 60_000);
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+project:
+  name: trading-ensemble-ia
+  seed: 42
+  mlflow_experiment: PatchTST-Trading-MultiModel
+  version: "3.0"
+
+market:
+  symbols: [BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT]
+  interval: "1h"
+  lookback_days: 180
+  limit_per_call: 1000
+  output_csv: data/raw/market_data.csv
+
+sentiment:
+  raw_dir: data/sentiment_raw
+  merged_output_csv: data/processed/sentiment_merged.csv
+  aligned_output_csv: data/processed/sentiment_market_aligned.csv
+
+model:
+  seq_len: 96
+  patch_len: 12
+  stride: 6
+  d_model: 64
+  n_heads: 4
+  n_layers: 3
+  ff_dim: 128
+  dropout: 0.20
+  n_classes: 3
+  hidden_dim: 128
+  ensemble_members: [patchtst, lstm_attention, cnn_transformer]
+
+training:
+  batch_size: 64
+  epochs: 20
+  lr: 0.0003
+  weight_decay: 0.0001
+  patience: 6
+  label_smoothing: 0.02
+  grad_clip: 1.0
+  class_weight_multipliers: [1.0, 1.8, 1.0]
+  scheduler:
+    type: reduce_on_plateau
+
+target:
+  horizon: 12
+  buy_threshold: 0.008
+  sell_threshold: -0.008
+
+backtest:
+  fee_bps: 5
+  slippage_bps: 2
+  probability_threshold: 0.45
+  hold_probability_threshold: 0.0
+  allow_short: true
+
+optuna:
+  n_trials: 20
+  n_startup: 5
+  n_epochs_trial: 8
+  final_epochs: 25
+  w_f1: 0.6
+  w_sharpe: 0.4
+
+rl:
+  episodes: 100
+  batch_size: 64
+  replay_capacity: 10000
+  target_update_every: 100
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_end: 0.05
+  epsilon_decay: 0.995
+
+evaluation:
+  walk_forward:
+    train_min_months: 3
+    test_months: 1
+    max_windows: 6
+
+paths:
+  model_dir: models
+  artifact_dir: artifacts
+  log_dir: logs
+
+mlrun:
+  project_name: trading-ia
+  tracking_uri: http://localhost:5000
+  artifact_path: artifacts/mlrun

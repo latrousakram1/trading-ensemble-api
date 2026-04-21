@@ -401,12 +401,29 @@ def get_validation():
 
 
 # ─── Dashboard ─────────────────────────────────────────────────────────────────
+@app.get("/test", tags=["test"])
+def test_endpoint():
+    return {"message": "Test endpoint works!", "timestamp": "2026-04-18"}
+
+
 @app.get("/dashboard", tags=["dashboard"])
 def dashboard():
-    page = Path(__file__).resolve().parents[1] / "web" / "dashboard.html"
-    if not page.exists():
-        raise HTTPException(404, "Dashboard introuvable.")
-    return FileResponse(page)
+    """Sert le dashboard HTML avec Chart.js"""
+    try:
+        # Chemin vers le fichier dashboard.html
+        dashboard_path = Path(__file__).resolve().parents[1] / "web" / "dashboard.html"
+        
+        if not dashboard_path.exists():
+            raise HTTPException(status_code=404, detail="Dashboard introuvable")
+        
+        # Lire le contenu du fichier HTML
+        with open(dashboard_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html_content, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur dashboard: {str(e)}")
 
 
 @app.get("/dashboard/data", tags=["dashboard"])
